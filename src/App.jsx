@@ -500,7 +500,6 @@ const SpaceSidebar = ({ spaces, active, onSelect, onCreate, me, onToggleSidebar,
       width:44,height:44,borderRadius:R.lg,
       background:sidebarOpen?C.accentSoft:C.bg3,
       color:sidebarOpen?C.accentLight:C.t2,
-      display:"none", // shown via @media in CSS
       alignItems:"center",justifyContent:"center",
       border:"none",cursor:"pointer",flexShrink:0,
     }}>
@@ -509,7 +508,7 @@ const SpaceSidebar = ({ spaces, active, onSelect, onCreate, me, onToggleSidebar,
       </svg>
     </button>
     <Tip text="Home" side="right">
-      <button onClick={()=>onSelect(null)} className="space-btn" style={{
+      <button onClick={()=>onSelect(null)} className="space-btn home-btn" style={{
         width:44,height:44,borderRadius:active===null?R.lg:R.full,
         background:active===null?C.accent:C.bg3,
         color:active===null?"#fff":C.t2,
@@ -600,7 +599,7 @@ const ChannelSidebar = ({ space, activeCh, onSelectCh, me, onLogout, onOpenProfi
             <button onClick={onInvite} style={{color:C.accentLight,display:"flex",alignItems:"center",background:"none",border:"none",cursor:"pointer",padding:3,flexShrink:0}}><I n="users" s={13}/></button>
           </Tip>
           {/* Close drawer — mobile only */}
-          <button onClick={onClose} className="mobile-menu-btn" style={{color:C.t3,display:"none",alignItems:"center",background:"none",border:"none",cursor:"pointer",padding:3,flexShrink:0,marginLeft:2}}><I n="x" s={15}/></button>
+          <button onClick={onClose} className="mobile-menu-btn" style={{color:C.t3,alignItems:"center",background:"none",border:"none",cursor:"pointer",padding:3,flexShrink:0,marginLeft:2}}><I n="x" s={15}/></button>
         </div>
         <div style={{position:"relative"}}>
           <div style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:C.t3,display:"flex"}}><I n="search" s={12}/></div>
@@ -942,7 +941,7 @@ const Chat = ({ ch, spaceId, msgs, onSend, typing, onReact, me, onOpenSidebar })
       <div style={{height:50,padding:"0 18px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",gap:7,overflow:"hidden"}}>
           {/* Mobile: back to sidebar */}
-          <button onClick={onOpenSidebar} className="mobile-menu-btn" style={{display:"none",alignItems:"center",justifyContent:"center",width:32,height:32,borderRadius:R.md,background:"none",border:"none",cursor:"pointer",color:C.t2,flexShrink:0,marginRight:2}}>
+          <button onClick={onOpenSidebar} className="mobile-menu-btn" style={{alignItems:"center",justifyContent:"center",width:32,height:32,borderRadius:R.md,background:"none",border:"none",cursor:"pointer",color:C.t2,flexShrink:0,marginRight:2}}>
             <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
           <div style={{color:C.t2,display:"flex",flexShrink:0}}><I n={ch.type==="voice"?"vol":"hash"} s={17}/></div>

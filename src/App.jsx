@@ -108,68 +108,71 @@ const GS = () => (
 
     /* ── RESPONSIVE ── */
 
+    /* Hide hamburger + backdrop by default (desktop) */
+    .mobile-menu-btn { display:none!important; }
+    .ch-backdrop     { display:none!important; }
+
     /* Tablet (≤768px): shrink sidebars, hide members */
     @media (max-width: 768px) {
-      .space-sidebar { width:56px!important; min-width:56px!important; }
-      .channel-sidebar { width:210px!important; min-width:210px!important; }
-      .members-panel { display:none!important; }
+      .space-sidebar  { width:56px!important; min-width:56px!important; }
+      .channel-sidebar{ width:200px!important; min-width:200px!important; }
+      .members-panel  { display:none!important; }
     }
 
-    /* Mobile (≤580px): channel sidebar slides over as a drawer */
+    /* Mobile (≤580px): space sidebar goes fixed, content is full width */
     @media (max-width: 580px) {
-      .space-sidebar { width:56px!important; min-width:56px!important; }
       .members-panel { display:none!important; }
+      .home-btn      { display:none!important; }
       .mobile-menu-btn { display:flex!important; }
-      .home-btn { display:none!important; }
 
-      /* channel sidebar becomes a fixed drawer */
+      /* Space sidebar: fixed strip on the left, sits above everything */
+      .space-sidebar {
+        position:fixed!important;
+        left:0; top:0; bottom:0;
+        width:56px!important;
+        min-width:56px!important;
+        z-index:300;
+      }
+
+      /* Channel sidebar: fixed drawer that slides in from the left */
       .channel-sidebar {
         position:fixed!important;
-        left:56px!important; top:0; bottom:0;
+        left:56px!important;
+        top:0; bottom:0;
         width:calc(100vw - 56px)!important;
-        max-width:280px!important;
-        z-index:200;
-        transform:translateX(-110%);
+        max-width:300px!important;
+        z-index:250;
+        transform:translateX(calc(-100% - 56px));
         transition:transform 260ms cubic-bezier(0.4,0,0.2,1);
-        box-shadow:4px 0 24px rgba(0,0,0,0.5);
+        box-shadow:6px 0 30px rgba(0,0,0,0.6);
       }
       .channel-sidebar.open {
         transform:translateX(0)!important;
       }
 
-      /* backdrop when drawer open */
-      .ch-backdrop {
-        display:block!important;
+      /* Main content: full width, with left padding = space sidebar width */
+      .main-layout {
+        padding-left:56px!important;
       }
 
-      /* chat area goes full width */
-      .chat-area { width:100%!important; }
+      /* Backdrop */
+      .ch-backdrop { display:block!important; }
 
-      /* auth form fits small screens */
-      .auth-card { padding:20px 16px!important; }
-      .auth-wrap  { padding:0 14px!important; }
-
-      /* modals full-width on mobile */
-      .modal-inner { width:calc(100vw - 28px)!important; border-radius:14px!important; }
-
-      /* composer textarea bigger tap area */
-      .composer-wrap { padding:8px 10px 12px!important; }
+      /* Modals full width */
+      .modal-inner { width:calc(100vw - 24px)!important; border-radius:14px!important; }
     }
 
-    /* Very small (≤380px) */
-    @media (max-width: 380px) {
-      .space-sidebar { width:50px!important; min-width:50px!important; }
-      .channel-sidebar { left:50px!important; }
+    /* Very small screens */
+    @media (max-width: 360px) {
+      .space-sidebar  { width:48px!important; }
+      .channel-sidebar{ left:48px!important; }
+      .main-layout    { padding-left:48px!important; }
     }
 
-    /* Touch devices: remove hover transforms */
+    /* No hover effects on touch */
     @media (hover: none) {
       .btn-hover:hover { opacity:1!important; transform:none!important; }
     }
-
-    /* Hide backdrop and hamburger by default */
-    .ch-backdrop { display:none; }
-    .mobile-menu-btn { display:none; }
   `}</style>
 );
 
@@ -1629,7 +1632,7 @@ const App = () => {
   return (
     <>
       <GS/>
-      <div style={{display:"flex",width:"100vw",height:"100vh",overflow:"hidden",background:C.bg0}}>
+      <div className="main-layout" style={{display:"flex",width:"100vw",height:"100vh",overflow:"hidden",background:C.bg0}}>
         <SpaceSidebar spaces={spaces} active={activeSpace} onSelect={(sp)=>{ handleSelectSpace(sp); setSidebarOpen(false); }}
           onCreate={()=>setModal("createSpace")} me={me}
           onToggleSidebar={()=>setSidebarOpen(p=>!p)} sidebarOpen={sidebarOpen}/>

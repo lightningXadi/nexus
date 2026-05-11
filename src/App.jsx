@@ -496,7 +496,7 @@ const Auth = ({ onLogin }) => {
 };
 
 /* ── SPACE SIDEBAR ───────────────────────────────────────────────────────────── */
-const SpaceSidebar = ({ spaces, active, onSelect, onCreate, me, onToggleSidebar, sidebarOpen }) => (
+const SpaceSidebar = ({ spaces, active, onSelect, onCreate, me, onToggleSidebar, sidebarOpen, onOpenProfile }) => (
   <div className="space-sidebar" style={{width:66,minWidth:66,background:C.bg0,display:"flex",flexDirection:"column",alignItems:"center",paddingTop:12,gap:6,borderRight:`1px solid ${C.border}`,flexShrink:0,height:"100%",overflowY:"auto",overflowX:"hidden"}}>
     {/* Hamburger — only visible on mobile via CSS */}
     <button onClick={onToggleSidebar} className="mobile-menu-btn" style={{
@@ -560,8 +560,10 @@ const SpaceSidebar = ({ spaces, active, onSelect, onCreate, me, onToggleSidebar,
       </button>
     </Tip>
 
-    <div style={{marginTop:"auto",marginBottom:12,flexShrink:0}}>
-      <Av user={me} size={34} showDot/>
+    <div style={{marginTop:"auto",marginBottom:12,flexShrink:0,cursor:"pointer"}} onClick={onOpenProfile}>
+      <Tip text="My Profile" side="right">
+        <Av user={me} size={34} showDot/>
+      </Tip>
     </div>
   </div>
 );
@@ -1635,7 +1637,8 @@ const App = () => {
       <div className="main-layout" style={{display:"flex",width:"100vw",height:"100vh",overflow:"hidden",background:C.bg0}}>
         <SpaceSidebar spaces={spaces} active={activeSpace} onSelect={(sp)=>{ handleSelectSpace(sp); setSidebarOpen(false); }}
           onCreate={()=>setModal("createSpace")} me={me}
-          onToggleSidebar={()=>setSidebarOpen(p=>!p)} sidebarOpen={sidebarOpen}/>
+          onToggleSidebar={()=>setSidebarOpen(p=>!p)} sidebarOpen={sidebarOpen}
+          onOpenProfile={()=>setModal("profile")}/>
 
         {/* Backdrop — tapping outside closes drawer on mobile */}
         {sidebarOpen&&<div className="ch-backdrop" onClick={()=>setSidebarOpen(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:190,backdropFilter:"blur(2px)"}}/>}

@@ -106,17 +106,70 @@ const GS = () => (
     .space-btn:hover{border-radius:${R.lg}!important;background:${C.bg4}!important}
     input:focus,textarea:focus{border-color:${C.accent}!important;box-shadow:0 0 0 3px ${C.accentSofter}!important}
 
-    /* Responsive */
+    /* ── RESPONSIVE ── */
+
+    /* Tablet (≤768px): shrink sidebars, hide members */
     @media (max-width: 768px) {
-      .space-sidebar{width:54px!important;min-width:54px!important}
-      .channel-sidebar{width:200px!important;min-width:200px!important}
-      .members-panel{display:none!important}
+      .space-sidebar { width:56px!important; min-width:56px!important; }
+      .channel-sidebar { width:210px!important; min-width:210px!important; }
+      .members-panel { display:none!important; }
     }
-    @media (max-width: 560px) {
-      .channel-sidebar{position:fixed!important;left:54px;top:0;bottom:0;z-index:100;transform:translateX(-110%);transition:transform 250ms ease}
-      .channel-sidebar.open{transform:translateX(0)!important}
-      .members-panel{display:none!important}
+
+    /* Mobile (≤580px): channel sidebar slides over as a drawer */
+    @media (max-width: 580px) {
+      .space-sidebar { width:56px!important; min-width:56px!important; }
+      .members-panel { display:none!important; }
+      .mobile-menu-btn { display:flex!important; }
+      .home-btn { display:none!important; }
+
+      /* channel sidebar becomes a fixed drawer */
+      .channel-sidebar {
+        position:fixed!important;
+        left:56px!important; top:0; bottom:0;
+        width:calc(100vw - 56px)!important;
+        max-width:280px!important;
+        z-index:200;
+        transform:translateX(-110%);
+        transition:transform 260ms cubic-bezier(0.4,0,0.2,1);
+        box-shadow:4px 0 24px rgba(0,0,0,0.5);
+      }
+      .channel-sidebar.open {
+        transform:translateX(0)!important;
+      }
+
+      /* backdrop when drawer open */
+      .ch-backdrop {
+        display:block!important;
+      }
+
+      /* chat area goes full width */
+      .chat-area { width:100%!important; }
+
+      /* auth form fits small screens */
+      .auth-card { padding:20px 16px!important; }
+      .auth-wrap  { padding:0 14px!important; }
+
+      /* modals full-width on mobile */
+      .modal-inner { width:calc(100vw - 28px)!important; border-radius:14px!important; }
+
+      /* composer textarea bigger tap area */
+      .composer-wrap { padding:8px 10px 12px!important; }
     }
+
+    /* Very small (≤380px) */
+    @media (max-width: 380px) {
+      .space-sidebar { width:50px!important; min-width:50px!important; }
+      .channel-sidebar { left:50px!important; }
+    }
+
+    /* Touch devices: remove hover transforms */
+    @media (hover: none) {
+      .btn-hover:hover { opacity:1!important; transform:none!important; }
+    }
+
+    /* Hide backdrop and hamburger by default */
+    .ch-backdrop { display:none; }
+    .mobile-menu-btn { display:none; }
   `}</style>
 );
 
@@ -440,8 +493,21 @@ const Auth = ({ onLogin }) => {
 };
 
 /* ── SPACE SIDEBAR ───────────────────────────────────────────────────────────── */
-const SpaceSidebar = ({ spaces, active, onSelect, onCreate, me }) => (
+const SpaceSidebar = ({ spaces, active, onSelect, onCreate, me, onToggleSidebar, sidebarOpen }) => (
   <div className="space-sidebar" style={{width:66,minWidth:66,background:C.bg0,display:"flex",flexDirection:"column",alignItems:"center",paddingTop:12,gap:6,borderRight:`1px solid ${C.border}`,flexShrink:0,height:"100%",overflowY:"auto",overflowX:"hidden"}}>
+    {/* Hamburger — only visible on mobile via CSS */}
+    <button onClick={onToggleSidebar} className="mobile-menu-btn" style={{
+      width:44,height:44,borderRadius:R.lg,
+      background:sidebarOpen?C.accentSoft:C.bg3,
+      color:sidebarOpen?C.accentLight:C.t2,
+      display:"none", // shown via @media in CSS
+      alignItems:"center",justifyContent:"center",
+      border:"none",cursor:"pointer",flexShrink:0,
+    }}>
+      <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
     <Tip text="Home" side="right">
       <button onClick={()=>onSelect(null)} className="space-btn" style={{
         width:44,height:44,borderRadius:active===null?R.lg:R.full,
@@ -499,12 +565,12 @@ const SpaceSidebar = ({ spaces, active, onSelect, onCreate, me }) => (
 );
 
 /* ── CHANNEL SIDEBAR ─────────────────────────────────────────────────────────── */
-const ChannelSidebar = ({ space, activeCh, onSelectCh, me, onLogout, onOpenProfile, onAddChannel, onInvite }) => {
+const ChannelSidebar = ({ space, activeCh, onSelectCh, me, onLogout, onOpenProfile, onAddChannel, onInvite, open, onClose }) => {
   const [collapsed,setCollapsed]=useState({});
   const [q,setQ]=useState("");
 
   if(!space) return (
-    <div style={{width:236,minWidth:236,background:C.bg1,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",height:"100%",flexShrink:0}}>
+    <div className={`channel-sidebar${open?" open":""}`} style={{width:236,minWidth:236,background:C.bg1,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",height:"100%",flexShrink:0}}>
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,padding:24,opacity:0.5}}>
         <div style={{fontSize:30}}>◈</div>
         <div style={{fontSize:13,color:C.t3,textAlign:"center",lineHeight:1.7}}>Select a space<br/>or create a new one.</div>
@@ -517,7 +583,7 @@ const ChannelSidebar = ({ space, activeCh, onSelectCh, me, onLogout, onOpenProfi
   const filtered = q ? allChs.filter(ch=>ch.name.toLowerCase().includes(q.toLowerCase())) : null;
 
   return (
-    <div style={{width:236,minWidth:236,background:C.bg1,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",animation:"slideL 200ms ease",height:"100%",flexShrink:0}}>
+    <div className={`channel-sidebar${open?" open":""}`} style={{width:236,minWidth:236,background:C.bg1,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",animation:"slideL 200ms ease",height:"100%",flexShrink:0}}>
       <div style={{padding:"14px 12px 10px",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:8,overflow:"hidden"}}>
@@ -533,6 +599,8 @@ const ChannelSidebar = ({ space, activeCh, onSelectCh, me, onLogout, onOpenProfi
           <Tip text="Invite People" side="bottom">
             <button onClick={onInvite} style={{color:C.accentLight,display:"flex",alignItems:"center",background:"none",border:"none",cursor:"pointer",padding:3,flexShrink:0}}><I n="users" s={13}/></button>
           </Tip>
+          {/* Close drawer — mobile only */}
+          <button onClick={onClose} className="mobile-menu-btn" style={{color:C.t3,display:"none",alignItems:"center",background:"none",border:"none",cursor:"pointer",padding:3,flexShrink:0,marginLeft:2}}><I n="x" s={15}/></button>
         </div>
         <div style={{position:"relative"}}>
           <div style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:C.t3,display:"flex"}}><I n="search" s={12}/></div>
@@ -834,7 +902,7 @@ const HomeDashboard = ({ me, spaces, onSelectSpace, onCreate, onlineUsers }) => 
 };
 
 /* ── CHAT ────────────────────────────────────────────────────────────────────── */
-const Chat = ({ ch, spaceId, msgs, onSend, typing, onReact, me }) => {
+const Chat = ({ ch, spaceId, msgs, onSend, typing, onReact, me, onOpenSidebar }) => {
   const [input,setInput]=useState("");
   const [emojiOpen,setEmojiOpen]=useState(false);
   const bottomRef=useRef(null);
@@ -873,8 +941,12 @@ const Chat = ({ ch, spaceId, msgs, onSend, typing, onReact, me }) => {
       {/* Header */}
       <div style={{height:50,padding:"0 18px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",gap:7,overflow:"hidden"}}>
+          {/* Mobile: back to sidebar */}
+          <button onClick={onOpenSidebar} className="mobile-menu-btn" style={{display:"none",alignItems:"center",justifyContent:"center",width:32,height:32,borderRadius:R.md,background:"none",border:"none",cursor:"pointer",color:C.t2,flexShrink:0,marginRight:2}}>
+            <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
           <div style={{color:C.t2,display:"flex",flexShrink:0}}><I n={ch.type==="voice"?"vol":"hash"} s={17}/></div>
-          <span style={{fontSize:14,fontWeight:600,color:C.t0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ch.name}</span>
+          <span style={{fontSize:14,fontWeight:500,color:C.t0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ch.name}</span>
           {ch.desc&&<><div style={{width:1,height:14,background:C.border,margin:"0 5px",flexShrink:0}}/><span style={{fontSize:12,color:C.t3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ch.desc}</span></>}
         </div>
         <div style={{display:"flex",gap:2,flexShrink:0}}>
@@ -1313,7 +1385,12 @@ const Empty = ({ type }) => (
 
 /* ── MAIN APP ────────────────────────────────────────────────────────────────── */
 const App = () => {
-  const [me,setMe]=useState(null);
+  // ── Session restore from localStorage ──
+  const savedSession = (() => {
+    try { return JSON.parse(localStorage.getItem("nexus_session")||"null"); } catch{ return null; }
+  })();
+
+  const [me,setMe]=useState(savedSession?.me||null);
   const [connected,setConnected]=useState(false);
   const [showConn,setShowConn]=useState(false);
   const [spaces,setSpaces]=useState([]);
@@ -1325,6 +1402,25 @@ const App = () => {
   const [spaceMembers,setSpaceMembers]=useState({});
   const [modal,setModal]=useState(null);
   const [toasts,setToasts]=useState([]);
+  const [sidebarOpen,setSidebarOpen]=useState(false);
+
+  // Persist session to localStorage whenever me changes
+  useEffect(()=>{
+    if(me) localStorage.setItem("nexus_session", JSON.stringify({me}));
+    else localStorage.removeItem("nexus_session");
+  },[me]);
+
+  // Auto-connect if session exists
+  useEffect(()=>{
+    if(savedSession?.me && !connected){
+      const sk = getSocket();
+      sk.connect();
+      sk.once("connect",()=>{
+        sk.emit("auth", savedSession.me);
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   // Invite URL detection
   const [pendingInvite]=useState(()=>{
@@ -1438,6 +1534,7 @@ const App = () => {
   const handleLogin = (userData, initialSpaces=[]) => {
     setMe(userData);
     setSpaces(initialSpaces);
+    localStorage.setItem("nexus_session", JSON.stringify({me:userData}));
     const sk = getSocket();
     sk.connect();
     sk.once("connect", ()=>{
@@ -1448,6 +1545,7 @@ const App = () => {
   const handleLogout = () => {
     getSocket().disconnect();
     socket = null;
+    localStorage.removeItem("nexus_session");
     setMe(null); setSpaces([]); setActiveSpace(null); setActiveCh(null);
     setMessages({}); setOnlineUsers([]); setSpaceMembers({});
   };
@@ -1533,24 +1631,31 @@ const App = () => {
     <>
       <GS/>
       <div style={{display:"flex",width:"100vw",height:"100vh",overflow:"hidden",background:C.bg0}}>
-        <SpaceSidebar spaces={spaces} active={activeSpace} onSelect={handleSelectSpace}
-          onCreate={()=>setModal("createSpace")} me={me}/>
+        <SpaceSidebar spaces={spaces} active={activeSpace} onSelect={(sp)=>{ handleSelectSpace(sp); setSidebarOpen(false); }}
+          onCreate={()=>setModal("createSpace")} me={me}
+          onToggleSidebar={()=>setSidebarOpen(p=>!p)} sidebarOpen={sidebarOpen}/>
 
-        <ChannelSidebar space={activeSpace} activeCh={activeCh} onSelectCh={handleSelectCh}
+        {/* Backdrop — tapping outside closes drawer on mobile */}
+        {sidebarOpen&&<div className="ch-backdrop" onClick={()=>setSidebarOpen(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:190,backdropFilter:"blur(2px)"}}/>}
+
+        <ChannelSidebar space={activeSpace} activeCh={activeCh}
+          onSelectCh={(ch)=>{ handleSelectCh(ch); setSidebarOpen(false); }}
           me={me} onLogout={handleLogout} onOpenProfile={()=>setModal("profile")}
           onAddChannel={()=>setModal("addChannel")}
-          onInvite={()=>activeSpace&&setModal("invite")}/>
+          onInvite={()=>activeSpace&&setModal("invite")}
+          open={sidebarOpen} onClose={()=>setSidebarOpen(false)}/>
 
         <div style={{flex:1,display:"flex",overflow:"hidden",minWidth:0}}>
           {!activeSpace
-            ? <HomeDashboard me={me} spaces={spaces} onSelectSpace={handleSelectSpace}
+            ? <HomeDashboard me={me} spaces={spaces} onSelectSpace={(sp)=>{ handleSelectSpace(sp); setSidebarOpen(false); }}
                 onCreate={()=>setModal("createSpace")} onlineUsers={onlineUsers.length}/>
             : !activeCh||activeCh.type==="voice"
               ? <Empty type={activeCh?.type}/>
               : <>
                   <Chat ch={activeCh} spaceId={activeSpace.id}
                     msgs={messages[activeCh.id]||[]} onSend={handleSend}
-                    typing={currentTyping} onReact={handleReact} me={me}/>
+                    typing={currentTyping} onReact={handleReact} me={me}
+                    onOpenSidebar={()=>setSidebarOpen(true)}/>
                   <Members spaceMembers={currentMembers.map(m=>typeof m==="string"?onlineUsers.find(u=>u.id===m)||{id:m,name:"User",status:"offline"}:m)} allOnlineUsers={onlineUsers}/>
                 </>
           }

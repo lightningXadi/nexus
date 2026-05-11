@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
    Change this to your server IP if friends are joining over LAN:
    e.g. "http://192.168.1.5:3001"
 ────────────────────────────────────────────────────────────────────────────── */
-const SOCKET_URL = "http://localhost:3001";
+const SOCKET_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
 let socket = null;
 
 const getSocket = () => {
